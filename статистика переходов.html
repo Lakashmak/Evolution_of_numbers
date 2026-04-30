@@ -34,12 +34,12 @@
                 for(; i < str.length; i++) {
                     if(str[i] != ' ') {
                         if(str[i] == ']') {
-                            seq.push(parseInt(num));
+                            if(num != "") seq.push(parseInt(num));
                             break;
                         }
                         if(str[i] != ';') num += str[i];
                         else {
-                            seq.push(parseInt(num));
+                            if(num != "") seq.push(parseInt(num));
                             num = "";
                         }
                     }
@@ -47,7 +47,8 @@
                 i++;
                 while(i < str.length && (str[i] == ' ' || str[i] == '/')) i++;
                 for(; i < str.length && str[i] != '\n'; i++) if(str[i] != ' ' && str[i] != '%') P += str[i];
-                if(seq.length != 0) list.push([seq, parseFloat(P)]);
+                //if(seq.length != 0) 
+                list.push([seq, parseFloat(P)]);
             }
             return list;
         }
@@ -71,14 +72,14 @@
                 var seq = [];
                 for(let l = 0; l < list[i][0].length; l++) seq.push(list[i][0][l]);
                 seq.push(1);
-                seq.sort((a, b) => a - b);
+                if(seq.length > 1) seq.sort((a, b) => a - b);
                 list2.push([seq, list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
                 for(let j = 0; j < list[i][0].length; j++) for(let k = j+1; k < list[i][0].length; k++) {
                     seq = [];
                     for(let l = 0; l < list[i][0].length; l++) if(l != j && l != k) seq.push(list[i][0][l]);
                     var mtr = mating(list[i][0][j], list[i][0][k]);
                     for(let l = 0; l < mtr.length; l++) seq.push(list[i][0][l]);
-                    seq.sort((a, b) => a - b);
+                    if(seq.length > 1) seq.sort((a, b) => a - b);
                     for(let l = 0; l < list2.length; l++) if(list2[l][0] == seq) {
                         list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)
                         break;
