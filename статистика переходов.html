@@ -17,9 +17,20 @@
     <textarea id="textBox1"></textarea>
     <p></p>
     <button id="button1">Посчитать</button>
+    <p>
+        <input type="checkbox" id="checkBox1">
+        <label for="checkBox1">удалять убыточные варианты ($ < 0)</label>
+    </p>
+    <p>
+        <input type="checkbox" id="checkBox2">
+        <label for="checkBox2">удалять избыточные варианты (одинаковых > 2)</label>
+    </p>
     <script>
         const textBox1 = document.getElementById('textBox1');
+        const textBox2 = document.getElementById('textBox2');
         const button1 = document.getElementById('button1');
+        const checkBox1 = document.getElementById('checkBox1');
+        const checkBox2 = document.getElementById('checkBox2');
         
         button1.addEventListener('click', () => {this.button1_Click();});
         
@@ -89,7 +100,8 @@
                     if(j != 0) textBox1.value += "; ";
                     textBox1.value += list[i][0][j] + "";
                 }
-                textBox1.value += "] //-" + list[i][2] + "$ " + list[i][1] + "%";
+                if(list[i][2] < 0) textBox1.value += "] //+" + (-list[i][2]) + "$ " + list[i][1] + "%";
+                else textBox1.value += "] //-" + list[i][2] + "$ " + list[i][1] + "%";
             }
             
             textBox2.value = "";
@@ -108,12 +120,16 @@
                 seq.push(1);
                 if(seq.length > 1) seq.sort((a, b) => a - b);
                 let c = true;
-                for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], [...seq])) {
-                    list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1);
-                    c = false;
-                    break;
+                for(let l = 0; l+2 < seq.length; l++) if(seq[l] === seq[l+2]) { console.log("!"); c = false; l = seq.length; }
+                if(!checkBox2.checked || c === true) {
+                    c = true;
+                    for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], [...seq])) {
+                        list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1);
+                        c = false;
+                        break;
+                    }
+                    if(c) list2.push([[...seq], list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
                 }
-                if(c) list2.push([[...seq], list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
                 for(let j = 0; j < list[i][0].length; j++) for(let k = j+1; k < list[i][0].length; k++) {
                     seq = [];
                     for(let l = 0; l < list[i][0].length; l++) if(l != j && l != k) seq.push(list[i][0][l]);
@@ -121,12 +137,16 @@
                     for(let l = 0; l < mtr.length; l++) seq.push(mtr[l]);
                     if(seq.length > 1) seq.sort((a, b) => a - b);
                     let c = true;
-                    for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], [...seq])) {
-                        list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1);
-                        c = false;
-                        l = list2.length;
+                    for(let l = 0; l+2 < seq.length; l++) if(seq[l] === seq[l+2]) { console.log("!"); c = false; l = seq.length; }
+                    if(!checkBox2.checked || c === true) {
+                        c = true;
+                        for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], [...seq])) {
+                            list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1);
+                            c = false;
+                            l = list2.length;
+                        }
+                        if(c) list2.push([[...seq], list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
                     }
-                    if(c) list2.push([[...seq], list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
                 }
             }
             list2.sort((a, b) => b[1] - a[1]);
@@ -149,7 +169,10 @@
                     prices.push([parseInt(num), list3[0] - sum]);
                     sum = list3[0];
                 }
-                if(sum !== "?") list3.push([list2[i][0], list2[i][1], list3[0] - sum]);
+                if(sum !== "?") {
+                    if(!checkBox1.checked) list3.push([list2[i][0], list2[i][1], list3[0] - sum]);
+                    else if(list3[0] - sum <= 0) list3.push([list2[i][0], list2[i][1], list3[0] - sum]);
+                }
                 else list3.push([list2[i][0], list2[i][1], sum]);
             }
             
