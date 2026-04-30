@@ -72,12 +72,12 @@
                 seq.push(1);
                 if(seq.length > 1) seq.sort((a, b) => a - b);
                 let c = true;
-                for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], seq)) {
+                for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], [...seq])) {
                     list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1);
                     c = false;
                     break;
                 }
-                if(c) list2.push([seq, list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
+                if(c) list2.push([[...seq], list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
                 for(let j = 0; j < list[i][0].length; j++) for(let k = j+1; k < list[i][0].length; k++) {
                     seq = [];
                     for(let l = 0; l < list[i][0].length; l++) if(l != j && l != k) seq.push(list[i][0][l]);
@@ -85,12 +85,12 @@
                     for(let l = 0; l < mtr.length; l++) seq.push(mtr[l]);
                     if(seq.length > 1) seq.sort((a, b) => a - b);
                     let c = true;
-                    for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], seq)) {
+                    for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], [...seq])) {
                         list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1);
                         c = false;
                         l = list2.length;
                     }
-                    if(c) list2.push([seq, list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
+                    if(c) list2.push([[...seq], list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
                 }
             }
             list2.sort((a, b) => b[1] - a[1]);
@@ -99,7 +99,7 @@
         
         function list_Eq(a, b) {
             try {
-                if(a == b) return true;
+                if(a === b) return true;
                 if(a.length != b.length) return false;
                 for(let i = 0; i < a.length; i++) if(!list_Eq(a[i], b[i])) return false;
                 return true;
