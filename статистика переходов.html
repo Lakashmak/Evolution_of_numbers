@@ -10,10 +10,8 @@
 <body>
     <textarea id="textBox1"></textarea>
     <button id="button1">Посчитать</button>
-    <textarea id="textBox2"></textarea>
     <script>
         const textBox1 = document.getElementById('textBox1');
-        const textBox2 = document.getElementById('textBox2');
         const button1 = document.getElementById('button1');
         
         button1.addEventListener('click', () => {this.button1_Click();});
@@ -54,15 +52,15 @@
         }
         
         function output(list) {
-            textBox2.value = "";
+            textBox1.value = "";
             for(let i = 0; i < list.length; i++) {
-                if(i != 0) textBox2.value += "\n";
-                textBox2.value += "    [";
+                if(i != 0) textBox1.value += "\n";
+                textBox1.value += "    [";
                 for(let j = 0; j < list[i][0].length; j++) {
-                    if(j != 0) textBox2.value += "; ";
-                    textBox2.value += list[i][0][j] + "";
+                    if(j != 0) textBox1.value += "; ";
+                    textBox1.value += list[i][0][j] + "";
                 }
-                textBox2.value += "] //" + list[i][1] + "%";
+                textBox1.value += "] //" + list[i][1] + "%";
             }
         }
         
@@ -73,21 +71,39 @@
                 for(let l = 0; l < list[i][0].length; l++) seq.push(list[i][0][l]);
                 seq.push(1);
                 if(seq.length > 1) seq.sort((a, b) => a - b);
-                list2.push([seq, list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
+                let c = true;
+                for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], seq)) {
+                    list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1);
+                    c = false;
+                    break;
+                }
+                if(c) list2.push([seq, list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
                 for(let j = 0; j < list[i][0].length; j++) for(let k = j+1; k < list[i][0].length; k++) {
                     seq = [];
                     for(let l = 0; l < list[i][0].length; l++) if(l != j && l != k) seq.push(list[i][0][l]);
                     var mtr = mating(list[i][0][j], list[i][0][k]);
-                    for(let l = 0; l < mtr.length; l++) seq.push(list[i][0][l]);
+                    for(let l = 0; l < mtr.length; l++) seq.push(mtr[l]);
                     if(seq.length > 1) seq.sort((a, b) => a - b);
-                    for(let l = 0; l < list2.length; l++) if(list2[l][0] == seq) {
-                        list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)
-                        break;
+                    let c = true;
+                    for(let l = 0; l < list2.length; l++) if(list_Eq(list2[l][0], seq)) {
+                        list2[l][1] += list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1);
+                        c = false;
+                        l = list2.length;
                     }
-                    else list2.push([seq, list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
+                    if(c) list2.push([seq, list[i][1]/(list[i][0].length*(list[i][0].length-1)/2+1)]);
                 }
             }
+            list2.sort((a, b) => b[1] - a[1]);
             return list2;
+        }
+        
+        function list_Eq(a, b) {
+            try {
+                if(a == b) return true;
+                if(a.length != b.length) return false;
+                for(let i = 0; i < a.length; i++) if(!list_Eq(a[i], b[i])) return false;
+                return true;
+            } catch(Exception) { return false; }
         }
         
         function mating(n1, n2) {
@@ -98,8 +114,8 @@
 				    list.push(-1);
 				    a = -a;
 				}
-				if(a == 1) return list;
                 a -= a%1;
+				if(a == 1) return list;
 				for(let i = 0, b = 2, c = 1; true;) {
 					if(a == 0) {
 						list.push(a);
