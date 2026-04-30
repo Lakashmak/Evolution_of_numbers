@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>эволюция чисел</title>
+    <style>
+    </style>
+</head>
+<body>
+    <textarea id="textBox1"></textarea>
+    <button id="button1">Посчитать</button>
+    <textarea id="textBox2"></textarea>
+    <script>
+        const textBox1 = document.getElementById('textBox1');
+        const textBox2 = document.getElementById('textBox2');
+        const button1 = document.getElementById('button1');
+        
+        button1.addEventListener('click', () => {this.button1_Click();});
+        
+        function button1_Click() {
+            var list = parse();
+            output(list);
+        }
+        
+        function parse() {
+            var list = [];
+            var str = textBox1.value;
+            for(let i = 0; i < str.length; i++) {
+                var seq = []; var num = ""; var P = "";
+                do { i++; } while(i < str.length && str[i] != '[');
+                if(!(i < str.length)) break;
+                for(; i < str.length; i++) {
+                    if(str[i] != ' ') {
+                        if(str[i] == ']') break;
+                        if(str[i] != ';') num += str[i];
+                        else {
+                            seq.push(parseInt(num));
+                            num = "";
+                        }
+                    }
+                } 
+                i++;
+                while(i < str.length && (str[i] == ' ' || str[i] == '/')) i++;
+                for(; i < str.length && str[i] != '\n'; i++) if(str[i] != ' ' && str[i] != '%') P += str[i];
+                if(seq.length != 0) list.push([seq, parseFloat(P)]);
+            }
+            return list;
+        }
+        
+        function output(list) {
+            textBox2.value = "";
+            for(let i = 0; i < list.length; i++) {
+                if(i != 0) textBox2.value += "\n";
+                textBox2.value += "    [";
+                for(let j = 0; j < list[i][0].length; j++) {
+                    if(j != 0) textBox2.value += "; ";
+                    textBox2.value += list[i][0][j] + "";
+                }
+                textBox2.value += "] //" + list[i][1] + "%";
+            }
+        }
+    </script>
+</body>
+</html>
