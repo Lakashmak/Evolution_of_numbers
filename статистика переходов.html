@@ -26,8 +26,8 @@
         function button1_Click() {
             var list = parse();
             var prices = parse2();
-            list = calculation(list, prices);
-            output(list[0], list[1]);
+            var result = calculation(list, prices);
+            output(result[0], result[1]);
         }
         
         function parse() {
@@ -62,7 +62,7 @@
                 do {
                     P = "";
                     for(; i < str.length && str[i] != '\n' && str[i] != '%' && str[i] != '$'; i++) if(str[i] != ' ') P += str[i];
-                } while(str[i] == '$' && str[i++] != '\n');
+                } while(i < str.length && str[i] == '$' && str[i++] != '\n');
                 //if(seq.length != 0) 
                 list.push([seq, parseFloat(P)]);
             }
@@ -74,9 +74,9 @@
             var str = textBox2.value;
             for(let i = 0; i < str.length; i++) {
                 var num = "", price = "";
-                while(i < str.length && str[i] != '/' && str[i] != '\n') if(str[i] != ' ') num += str[i++];
-                while(i < str.length && str[i] != '\n') if(str[i] != ' ' && str[i] != '/' && str[i] != '$') price += str[i++];
-                list.push([parseInt(num), parseInt(price)]);
+                while(i < str.length && str[i] != '/' && str[i] != '\n') { if(str[i] != ' ') num += str[i]; i++; }
+                while(i < str.length && str[i] != '\n') { if(str[i] != ' ' && str[i] != '/' && str[i] != '$') price += str[i]; i++; }
+                if(num != "" && price != "") list.push([parseInt(num), parseInt(price)]);
             }
             return list;
         }
@@ -89,13 +89,13 @@
                     if(j != 0) textBox1.value += "; ";
                     textBox1.value += list[i][0][j] + "";
                 }
-                textBox1.value += "] //" + list[i][1] + "%";
+                textBox1.value += "] //-" + list[i][2] + "$ " + list[i][1] + "%";
             }
             
             textBox2.value = "";
             for(let i = 0; i < prices.length; i++) {
                 if(i != 0) textBox2.value += "\n";
-                textBox2.value += prices[0] + " //" + prices[1] + "$";
+                textBox2.value += prices[i][0] + " //" + prices[i][1] + "$";
             }
         }
         
@@ -145,11 +145,12 @@
                         j = list2[i][0].length;
                     }
                 }
-                if(!num) {
+                if(sum !== "?" && num !== false) {
                     prices.push([parseInt(num), list3[0] - sum]);
                     sum = list3[0];
                 }
-                list3.push([list2[0], list2[1], list3[0] - sum]);
+                if(sum !== "?") list3.push([list2[i][0], list2[i][1], list3[0] - sum]);
+                else list3.push([list2[i][0], list2[i][1], sum]);
             }
             
             return [list3, prices];
