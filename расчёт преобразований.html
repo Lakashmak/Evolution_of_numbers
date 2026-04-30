@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>эволюция чисел</title>
+    <style>
+        html, body {
+            overscroll-behavior: none; /* или overscroll-behavior-y: none; для вертикального свайпа */
+        }
+        
+        #button1 {
+            margin-left: 9.5em
+        }
+        
+        #label1 {
+            margin-left: 9em
+        }
+    </style>
+</head>
+<body>
+    <button id="button1">Посчитать</button>
+    <div id="label1">шаг: 0</div>
+    <textarea id="textBox1">[1]</textarea>
+    <div id="buttons"></div>
+    <script>
+        const button1 = document.getElementById('button1');
+        const label1 = document.getElementById('label1');
+        const textBox1 = document.getElementById('textBox1');
+        const buttons = document.getElementById('buttons');
+        
+        button1.addEventListener('click', () => {this.button1_Click();});
+        
+        let times = 0;
+        var nums = [1];
+        
+        function button1_Click() {
+            if(times < nums.length) {
+                for(let i = 0; i <= times; i++) {
+                    var seq = mating(nums[i], nums[times]);
+                    for(let j = 0; j < seq.length; j++) {
+                        let c = false;
+                        for(let k = 0; k < nums.length && !c; k++) if(seq[j] == nums[k]) c = true;
+                        if(!c) nums.push(seq[j]);
+                    }
+                }
+            }
+            times++;
+            label1.innerText = "шаг: " + times;
+            textBox1.value = "[";
+            for(let i = 0; i < nums.length; i++) {
+                if(i != 0) textBox1.value += "; ";
+                textBox1.value += nums[i] + "";
+            }
+            textBox1.value += "]";
+        }
+        
+        function drawButtons() {
+            for(let i = 0; i < nums.length; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i + "";
+                //btn.className = "numBtn";
+                const btns = [...buttons.children];
+                if(btns.length < 1) buttons.insertBefore(btn, btns[btns.length - 1]);
+                else buttons.appendChild(btn);
+            }
+        }
+        
+        function mating(n1, n2) {
+            list = [];
+			try {
+				a = n1*n2 - 1;
+				if(a < 0) {
+				    list.push(-1);
+				    a = -a;
+				}
+                a -= a%1;
+				if(a == 1) return list;
+				for(let i = 0, b = 2, c = 1; true;) {
+					if(a == 0) {
+						list.push(a);
+						break;
+					}
+					while ((a/(10*i+b))%1 == 0) {
+						if((a/(10*i+b)) < 10*i+b) {
+							list.push(a);
+							c = 0;
+							break;
+						}
+						list.push(10*i+b);
+						a /= (10*i+b);
+					}
+					if ((a/(10*i+b))%1 != 0) {
+						if (b == 2) b = 3;
+						else if (b == 3 && i == 0) b = 5;
+						else if (b == 5) b = 7;
+						else if (b == 7 && i == 0) { b = 1; i++; }
+						else if (b == 1) b = 3;
+						else if (b == 3) b = 7;
+						else if (b == 7) b = 9;
+						else if (b == 9) { b = 1; i++; }
+					}
+					if((a/(10*i+b)) < 10*i+b) {
+						if (c == 1) list.push(a);
+						break;
+					}
+				}
+			} catch(Exception) { return list; }
+			return list;
+        }
+    </script>
+</body>
+</html>
