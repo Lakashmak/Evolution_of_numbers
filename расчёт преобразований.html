@@ -58,35 +58,68 @@
         button1.addEventListener('click', () => {this.button1_Click();});
         button2.addEventListener('click', () => {this.button2_Click();});
         
-        let times = 0;
-        var nums = [[1, [["[] → [1] //1$", 1]], 0]];
-        addButton(1);
-        let selNum;
-        let page = 0;
+        let times; var nums; let selNum; let page; let rulMat; let rulMul; var prime;
+        button2_Click();
+        //addButton(1);
         //for(let i = -100; i <= 100; i++) addButton(i);
-        let rulMat = 1;
-        var prime = [];
-        for(let i = 2; prime.length < Math.abs(rulMat); i++) if(decomposition(i).length == 1) prime.push(i);
+        /*for(let i = 2; prime.length < Math.abs(rulMat); i++) if(decomposition(i).length == 1) prime.push(i);
         let bgc = get_color(prime[Math.abs(rulMat)-1]);
         if(rulMat > 0) body.style.backgroundColor = `rgb(${bgc[0]}, ${bgc[1]}, ${bgc[2]})`;
         else if(rulMat == 0) body.style.backgroundColor = `rgb(0, 0, 255)`;
-        else body.style.backgroundColor = `rgb(${255-bgc[0]}, ${255-bgc[1]}, ${255-bgc[2]})`;
+        else body.style.backgroundColor = `rgb(${255-bgc[0]}, ${255-bgc[1]}, ${255-bgc[2]})`;*/
         
         function button2_Click() {
-            rulMat = parseInt(textBox2.value);
+            if(textBox2.value == "Введите натуральное число!") textBox2.value = "1";
+            let rms1 = "", rms2 = ""; for(let i = 0, c = false; i < textBox2.value.length; i++) {
+                if(textBox2.value[i] === ';') {
+                    if(!c) c = true;
+                    else break;
+                } else if(textBox2.value[i] !== ' ') {
+                    if(!c) rms1 += textBox2.value[i];
+                    else rms2 += textBox2.value[i];
+                }
+            }
+            if(rms1 !== "") rulMat = parseInt(rms1);
+            if(rms2 !== "") rulMul = parseInt(rms2); else rulMul = 2;
+            if(rulMul < 0) rulMul = 0;
+            if(rulMul != 2) textBox2.value = rulMat + "; " + rulMul;
+            else textBox2.value = rulMat + "";
+            if(rulMat + "" == "NaN" || rulMul + "" == "NaN") {
+                textBox2.value = "Введите натуральное число!";
+                return;
+            }
             times = 0;
-            nums = [[1, [["[] → [1] //1$", 1]], 0]];
+            nums = [[1, [["[] → [1] //1$", 0]], 1]];
             buttons.innerHTML = "";
             addButton(1);
             page = 0;
             prime = [];
             for(let i = 2; prime.length < Math.abs(rulMat); i++) if(decomposition(i).length == 1) prime.push(i);
             bgc = get_color(prime[Math.abs(rulMat)-1]);
-            if(rulMat > 0) body.style.backgroundColor = `rgb(${bgc[0]}, ${bgc[1]}, ${bgc[2]})`;
-            else if(rulMat == 0) body.style.backgroundColor = `rgb(0, 0, 255)`;
-            else body.style.backgroundColor = `rgb(${255-bgc[0]}, ${255-bgc[1]}, ${255-bgc[2]})`;
+            if(rulMat == 0) bgc = [0, 0, 255];
+            if(rulMat < 0) bgc = [255-bgc[0], 255-bgc[1], 255-bgc[2]];
+            for(let i = 0; i < Math.abs(rulMul-2); i++) {
+                let color = bgc[0]*256*256 + bgc[1]*256 + bgc[2];
+                bgc = get_color(color);
+            }
+            if(rulMul-2 < 0) bgc = [255-bgc[0], 255-bgc[1], 255-bgc[2]];
+            /*if(rulMat > 0)*/ body.style.backgroundColor = `rgb(${bgc[0]}, ${bgc[1]}, ${bgc[2]})`;
+            //else if(rulMat == 0) body.style.backgroundColor = `rgb(0, 0, 255)`;
+            //else body.style.backgroundColor = `rgb(${255-bgc[0]}, ${255-bgc[1]}, ${255-bgc[2]})`;
             label1.innerText = "шаг: " + times;
-            textBox1.value = "установлено правило:\n mating(a; b) = decomposition(a*b ";
+            textBox1.value = "установлено правило:\n mating(";
+            const alf = "abcdefghijklmnopqrstuvwxyz";
+            for(let i = 0; i < rulMul; i++) {
+                if(i != 0) textBox1.value += "; ";
+                if(rulMul <= alf.length) textBox1.value += alf[i];
+                else textBox1.value += "x" + (i+1);
+            } textBox1.value += ") = decomposition(";
+            if(rulMul === 0) textBox1.value += "1";
+            for(let i = 0; i < rulMul; i++) {
+                if(i != 0) textBox1.value += "*";
+                if(rulMul <= alf.length) textBox1.value += alf[i];
+                else textBox1.value += "x" + (i+1);
+            } textBox1.value += " ";
             if(rulMat >= 0) textBox1.value += "- " + rulMat + ")";
             else textBox1.value += "+ " + (-rulMat) + ")";
             textBox1.value += "\n\nдобавлены:\n    [] → [1] //-0$";
@@ -95,12 +128,24 @@
         function button1_Click() {
             textBox1.value = "добавлены:";
             if(times < nums.length) {
-                for(let i = 0; i <= times; i++) {
-                    var seq = mating([nums[i][0], nums[times][0]], rulMat); seq.sort((a, b) => a - b);
-                    let sum1 = get_price(nums[i][0]) + get_price(nums[times][0]) + 1;
-                    let a, b; if(nums[times][0] >= nums[i][0]) { a = nums[i][0]; b = nums[times][0]; }
-                    else { a = nums[times][0]; b = nums[i][0]; }
-                    var mated = "[" + a + "; " + b + "] → [";
+                let i = []; for(let j = 1; j < rulMul; j++) i.push(0);
+                if(rulMul < 2) i.push(times);
+                for(; i[0] <= times; i[i.length-1]++) {
+                    for(let j = i.length-1; j > 0; j--) if(i[j] > times) {
+                        i[j-1]++; for(let k = j; k < i.length; k++) i[k] = i[j-1];
+                    } if(i[0] > times) break;
+                    let input = []; //if(nums[times][0] >= nums[i][0]) { a = nums[i][0]; b = nums[times][0]; }
+                    if(rulMul > 1) for(let j = 0; j < i.length; j++) input.push(nums[i[j]][0]); 
+                    if(rulMul > 0) input.push(nums[times][0]);
+                    input.sort((a, b) => a - b); //else { a = nums[times][0]; b = nums[i][0]; }
+                    var seq = mating(input, rulMat); seq.sort((a, b) => a - b);
+                    let sum1 = 1; if(rulMul > 0) sum1 += get_price(nums[times][0]); 
+                    if(rulMul > 1) for(let j = 0; j < i.length; j++) sum1 += get_price(nums[i[j]][0]);
+                    var mated = "[";
+                    for(let j = 0; j < input.length; j++) {
+                        if(j != 0) mated += "; ";
+                        mated += input[j];
+                    } mated += "] → [";
                     let sum2 = 0; var newNums = [];
                     for(let j = 0; j < seq.length; j++) {
                         if(j != 0) mated += "; ";
