@@ -87,6 +87,8 @@
             times++;
             label1.innerText = "шаг: " + times;
             
+            //buttons.innerHTML = ""; [...buttons.children].sort((a, b) => parseInt(a.textContent) - parseInt(b.textContent)).forEach(btn => buttons.appendChild(btn));
+            
             /*textBox1.value = "[";
             for(let i = 0; i < nums.length; i++) {
                 if(i != 0) textBox1.value += "; ";
@@ -109,7 +111,12 @@
             btn.textContent = num + "";
             btn.className = "numBtn";
             btn.addEventListener('click', () => {this.numBtn_Click(num);});
-            buttons.appendChild(btn);
+            const btns = [...buttons.children];
+            if(btns.length == 0 || parseInt(btns[btns.length-1].textContent) < num) buttons.appendChild(btn);
+            else for(let i = 0; i < btns.length; i++) if(parseInt(btns[i].textContent) > num) {
+                buttons.insertBefore(btn, btns[i]);
+                break;
+            }
         }
         
         function numBtn_Click(num) {
