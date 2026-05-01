@@ -41,7 +41,7 @@
 <body>
     <button id="button1">Посчитать</button>
     <div id="label1">шаг: 0</div>
-    <textarea id="textBox1">[] → [1]</textarea>
+    <textarea id="textBox1">[] → [1] //1$</textarea>
     <div id="buttons"></div>
     <script>
         const button1 = document.getElementById('button1');
@@ -52,35 +52,52 @@
         button1.addEventListener('click', () => {this.button1_Click();});
         
         let times = 0;
-        var nums = [[1, ["[] → [1]"]]];
+        var nums = [[1, [["[] → [1] //1$", 1]], 1]];
         addButton(1);
+        let selNum;
+        let page = 0;
         
         function button1_Click() {
             textBox1.value = "добавлены:";
             if(times < nums.length) {
                 for(let i = 0; i <= times; i++) {
                     var seq = mating(nums[i][0], nums[times][0]); seq.sort((a, b) => a - b);
+                    let sum1 = get_price(nums[i][0]) + get_price(nums[times][0]) + 1;
                     let a, b; if(nums[times][0] >= nums[i][0]) { a = nums[i][0]; b = nums[times][0]; }
                     else { a = nums[times][0]; b = nums[i][0]; }
                     var mated = "[" + a + "; " + b + "] → [";
+                    let sum2 = 0; var newNums = [];
                     for(let j = 0; j < seq.length; j++) {
                         if(j != 0) mated += "; ";
                         mated += seq[j];
-                    } mated += "]";
+                        var price = get_price(seq[j]);
+                        if(price !== '?') sum2 += price;
+                        else newNums.push(seq[j]);
+                    }
+                    if(newNums.length == 0) {
+                        if((sum2 - sum1) > 0) mated += "] //+" + (sum2 - sum1) + "$";
+                        else if((sum2 - sum1) < 0) mated += "] //" + (sum2 - sum1) + "$";
+                        else mated += "] //-0$";
+                    }
+                    else mated += "] //-0$";
                     textBox1.value += "\n    " + mated;
                     for(let j = 0; j < seq.length; j++) {
                         let c = false;
                         for(let k = 0; k < nums.length && !c; k++) if(seq[j] == nums[k][0]) c = true;
                         if(!c) {
-                            nums.push([seq[j], []]);
+                            nums.push([seq[j], [], (sum1 - sum2)/newNums.length]);
                             addButton(seq[j])
                         }
                     }
                     let id = 0; for(; id < nums.length; id++) if(seq[0] == nums[id][0]) break;
-                    if(id < nums.length) nums[id][1].push(mated);
+                    if(id < nums.length) {
+                        if(newNums.length == 0) nums[id][1].push([mated, (sum2 - sum1)]);
+                        else nums[id][1].push([mated, 0]);
+                    }
                     for(let j = 1; j < seq.length; j++) if(seq[j] != seq[j-1]) {
                         id = 0; for(; id < nums.length; id++) if(seq[j] == nums[id][0]) break;
-                        nums[id][1].push(mated);
+                        if(newNums.length == 0) nums[id][1].push([mated, (sum2 - sum1)]);
+                        else nums[id][1].push([mated, 0]);
                     }
                 }
             }
@@ -120,10 +137,31 @@
         }
         
         function numBtn_Click(num) {
-            textBox1.value = num + ":\n";
+            if(selNum == num) page++;
+            else page = 0;
+            textBox1.value = num + ":";
             let id = 0; for(; id < nums.length; id++) if(num == nums[id][0]) break;
-            if(id < nums.length) for(let i = 0; i < nums[id][1].length; i++)
-                textBox1.value += "\n" + nums[id][1][i];
+            textBox1.value += "\nпервая цена создания: " + nums[id][2] + "$";
+            textBox1.value += "\nспособов создания: " + nums[id][1].length;
+            if(page*100+1 >= nums[id][1].length) page = 0;
+            if(nums[id][1].length > 100) textBox1.value += " (" + (page*100+1) + " - " + min(page*100+100, nums[id][1].length) + ")";
+            textBox1.value += ":\n";
+            if(id < nums.length) {
+                if(nums[id][1].length > 1 && selNum != num) nums[id][1].sort((a, b) => b[1] - a[1]);
+                for(let i = page*100; i < min(page*100+100, nums[id][1].length); i++) 
+                    textBox1.value += "\n" + nums[id][1][i][0];
+            }
+            selNum = num;
+        }
+        
+        function min(a, b) {
+            if(a > b) return b;
+            return a;
+        }
+        
+        function get_price(num) {
+            for(let i = 0; i < nums.length; i++) if(num == nums[i][0]) return nums[i][2];
+            return '?';
         }
         
         function mating(n1, n2) {
