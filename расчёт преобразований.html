@@ -65,7 +65,7 @@
                     var mated = "[" + a + "; " + b + "] → [";
                     for(let j = 0; j < seq.length; j++) {
                         if(j != 0) mated += "; ";
-                        mated += seq[i];
+                        mated += seq[j];
                     } mated += "]";
                     textBox1.value += "\n    " + mated;
                     for(let j = 0; j < seq.length; j++) {
@@ -73,7 +73,7 @@
                         for(let k = 0; k < nums.length && !c; k++) if(seq[j] == nums[k][0]) c = true;
                         if(!c) {
                             nums.push([seq[j], []]);
-                            addButton(seq[j]);
+                            addButton(seq[j])
                         }
                     }
                     let id = 0; for(; id < nums.length; id++) if(seq[0] == nums[id][0]) break;
@@ -114,7 +114,7 @@
         
         function numBtn_Click(num) {
             textBox1.value = num + ":\n";
-            let id = 0; for(; id < nums.length; id++) if(seq[0] == nums[id][0]) break;
+            let id = 0; for(; id < nums.length; id++) if(num == nums[id][0]) break;
             if(id < nums.length) for(let i = 0; i < nums[id][1].length; i++)
                 textBox1.value += "\n" + nums[id][1][i];
         }
