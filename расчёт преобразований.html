@@ -6,22 +6,42 @@
     <title>эволюция чисел</title>
     <style>
         html, body {
-            overscroll-behavior: none; /* или overscroll-behavior-y: none; для вертикального свайпа */
+            overscroll-behavior: none;
         }
         
         #button1 {
-            margin-left: 9.5em
+            margin-left: 9.5em;
         }
         
         #label1 {
-            margin-left: 9em
+            margin-left: 9em;
+            margin-top: 10px;
+        }
+        
+        #textBox1 {
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: 10px;
+            width: 93%;
+            height: 200px;
+        }
+        
+        #buttons {
+            margin: 5px;
+            padding: 5px;
+            /*border: 1px solid black;*/
+        }
+        
+        .numBtn {
+            margin: 5px;
+            border-radius: 200px;
         }
     </style>
 </head>
 <body>
     <button id="button1">Посчитать</button>
     <div id="label1">шаг: 0</div>
-    <textarea id="textBox1">[1]</textarea>
+    <textarea id="textBox1">[] → [1]</textarea>
     <div id="buttons"></div>
     <script>
         const button1 = document.getElementById('button1');
@@ -32,38 +52,71 @@
         button1.addEventListener('click', () => {this.button1_Click();});
         
         let times = 0;
-        var nums = [1];
+        var nums = [[1, ["[] → [1]"]]];
+        addButton(1);
         
         function button1_Click() {
+            textBox1.value = "добавлены:";
             if(times < nums.length) {
                 for(let i = 0; i <= times; i++) {
-                    var seq = mating(nums[i], nums[times]);
+                    var seq = mating(nums[i][0], nums[times][0]); seq.sort((a, b) => a - b);
+                    let a, b; if(nums[times][0] >= nums[i][0]) { a = nums[i][0]; b = nums[times][0]; }
+                    else { a = nums[times][0]; b = nums[i][0]; }
+                    var mated = "[" + a + "; " + b + "] → [";
+                    for(let j = 0; j < seq.length; j++) {
+                        if(j != 0) mated += "; ";
+                        mated += seq[i];
+                    } mated += "]";
+                    textBox1.value += "\n    " + mated;
                     for(let j = 0; j < seq.length; j++) {
                         let c = false;
-                        for(let k = 0; k < nums.length && !c; k++) if(seq[j] == nums[k]) c = true;
-                        if(!c) nums.push(seq[j]);
+                        for(let k = 0; k < nums.length && !c; k++) if(seq[j] == nums[k][0]) c = true;
+                        if(!c) {
+                            nums.push([seq[j], []]);
+                            addButton(seq[j]);
+                        }
+                    }
+                    let id = 0; for(; id < nums.length; id++) if(seq[0] == nums[id][0]) break;
+                    if(id < nums.length) nums[id][1].push(mated);
+                    for(let j = 1; j < seq.length; j++) if(seq[j] != seq[j-1]) {
+                        id = 0; for(; id < nums.length; id++) if(seq[j] == nums[id][0]) break;
+                        nums[id][1].push(mated);
                     }
                 }
             }
             times++;
             label1.innerText = "шаг: " + times;
-            textBox1.value = "[";
+            
+            /*textBox1.value = "[";
             for(let i = 0; i < nums.length; i++) {
                 if(i != 0) textBox1.value += "; ";
                 textBox1.value += nums[i] + "";
             }
-            textBox1.value += "]";
+            textBox1.value += "]";*/
+            
+            //drawButtons();
         }
         
-        function drawButtons() {
-            for(let i = 0; i < nums.length; i++) {
-                const btn = document.createElement('button');
-                btn.textContent = i + "";
+        function addButton(num) {
+            //buttons.innerHTML = "";
+            //for(let i = 0; i < nums.length; i++) {
                 //btn.className = "numBtn";
-                const btns = [...buttons.children];
-                if(btns.length < 1) buttons.insertBefore(btn, btns[btns.length - 1]);
-                else buttons.appendChild(btn);
-            }
+                //const btns = [...buttons.children];
+                //if(btns.length < 1) buttons.insertBefore(btn, btns[btns.length - 1]);
+                //else 
+            //}
+            const btn = document.createElement('button');
+            btn.textContent = num + "";
+            btn.className = "numBtn";
+            btn.addEventListener('click', () => {this.numBtn_Click(num);});
+            buttons.appendChild(btn);
+        }
+        
+        function numBtn_Click(num) {
+            textBox1.value = num + ":\n";
+            let id = 0; for(; id < nums.length; id++) if(seq[0] == nums[id][0]) break;
+            if(id < nums.length) for(let i = 0; i < nums[id][1].length; i++)
+                textBox1.value += "\n" + nums[id][1][i];
         }
         
         function mating(n1, n2) {
