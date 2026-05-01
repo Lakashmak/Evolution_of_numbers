@@ -1,0 +1,303 @@
+const button1 = document.getElementById('button1');
+const button2 = document.getElementById('button2');
+const label1 = document.getElementById('label1');
+const textBox1 = document.getElementById('textBox1');
+const textBox2 = document.getElementById('textBox2');
+const buttons = document.getElementById('buttons');
+const body = document.getElementById('body');
+
+button1.addEventListener('click', () => {this.button1_Click();});
+button2.addEventListener('click', () => {this.button2_Click();});
+
+let times; var nums; let selNum; let page; let rulMat; let rulMul; var prime;
+button2_Click();
+//addButton(1);
+//for(let i = -100; i <= 100; i++) addButton(i);
+/*for(let i = 2; prime.length < Math.abs(rulMat); i++) if(decomposition(i).length == 1) prime.push(i);
+let bgc = get_color(prime[Math.abs(rulMat)-1]);
+if(rulMat > 0) body.style.backgroundColor = `rgb(${bgc[0]}, ${bgc[1]}, ${bgc[2]})`;
+else if(rulMat == 0) body.style.backgroundColor = `rgb(0, 0, 255)`;
+else body.style.backgroundColor = `rgb(${255-bgc[0]}, ${255-bgc[1]}, ${255-bgc[2]})`;*/
+
+function button2_Click() {
+    if(textBox2.value == "Введите натуральное число!") textBox2.value = "1";
+    let rms1 = "", rms2 = ""; for(let i = 0, c = false; i < textBox2.value.length; i++) {
+        if(textBox2.value[i] === ';') {
+            if(!c) c = true;
+            else break;
+        } else if(textBox2.value[i] !== ' ') {
+            if(!c) rms1 += textBox2.value[i];
+            else rms2 += textBox2.value[i];
+        }
+    }
+    if(rms1 !== "") rulMat = parseInt(rms1);
+    if(rms2 !== "") rulMul = parseInt(rms2); else rulMul = 2;
+    if(rulMul < 0) rulMul = 0;
+    if(rulMul != 2) textBox2.value = rulMat + "; " + rulMul;
+    else textBox2.value = rulMat + "";
+    if(rulMat + "" == "NaN" || rulMul + "" == "NaN") {
+        textBox2.value = "Введите натуральное число!";
+        return;
+    }
+    times = 0;
+    nums = [[1, [["[] → [1] //1$", 0]], 1]];
+    buttons.innerHTML = "";
+    addButton(1);
+    page = 0;
+    prime = [];
+    for(let i = 2; prime.length < Math.abs(rulMat); i++) if(decomposition(i).length == 1) prime.push(i);
+    bgc = get_color(prime[Math.abs(rulMat)-1]);
+    if(rulMat == 0) bgc = [0, 0, 255];
+    if(rulMat < 0) bgc = [255-bgc[0], 255-bgc[1], 255-bgc[2]];
+    for(let i = 0; i < Math.abs(rulMul-2); i++) {
+        let color = bgc[0]*256*256 + bgc[1]*256 + bgc[2];
+        bgc = get_color(color);
+    }
+    if(rulMul-2 < 0) bgc = [255-bgc[0], 255-bgc[1], 255-bgc[2]];
+    /*if(rulMat > 0)*/ body.style.backgroundColor = `rgb(${bgc[0]}, ${bgc[1]}, ${bgc[2]})`;
+    //else if(rulMat == 0) body.style.backgroundColor = `rgb(0, 0, 255)`;
+    //else body.style.backgroundColor = `rgb(${255-bgc[0]}, ${255-bgc[1]}, ${255-bgc[2]})`;
+    label1.innerText = "шаг: " + times;
+    textBox1.value = "установлено правило:\n mating(";
+    const alf = "abcdefghijklmnopqrstuvwxyz";
+    for(let i = 0; i < rulMul; i++) {
+        if(i != 0) textBox1.value += "; ";
+        if(rulMul <= alf.length) textBox1.value += alf[i];
+        else textBox1.value += "x" + (i+1);
+    } textBox1.value += ") = decomposition(";
+    if(rulMul === 0) textBox1.value += "1";
+    for(let i = 0; i < rulMul; i++) {
+        if(i != 0) textBox1.value += "*";
+        if(rulMul <= alf.length) textBox1.value += alf[i];
+        else textBox1.value += "x" + (i+1);
+    } textBox1.value += " ";
+    if(rulMat >= 0) textBox1.value += "- " + rulMat + ")";
+    else textBox1.value += "+ " + (-rulMat) + ")";
+    textBox1.value += "\n\nдобавлены:\n    [] → [1] //-0$";
+}
+
+function button1_Click() {
+    textBox1.value = "добавлены:";
+    if(times < nums.length) {
+        let i = []; for(let j = 1; j < rulMul; j++) i.push(0);
+        if(rulMul < 2) i.push(times);
+        for(; i[0] <= times; i[i.length-1]++) {
+            for(let j = i.length-1; j > 0; j--) if(i[j] > times) {
+                i[j-1]++; for(let k = j; k < i.length; k++) i[k] = i[j-1];
+            } if(i[0] > times) break;
+            let input = []; //if(nums[times][0] >= nums[i][0]) { a = nums[i][0]; b = nums[times][0]; }
+            if(rulMul > 1) for(let j = 0; j < i.length; j++) input.push(nums[i[j]][0]); 
+            if(rulMul > 0) input.push(nums[times][0]);
+            input.sort((a, b) => a - b); //else { a = nums[times][0]; b = nums[i][0]; }
+            var seq = mating(input, rulMat); seq.sort((a, b) => a - b);
+            let sum1 = 1; if(rulMul > 0) sum1 += get_price(nums[times][0]); 
+            if(rulMul > 1) for(let j = 0; j < i.length; j++) sum1 += get_price(nums[i[j]][0]);
+            var mated = "[";
+            for(let j = 0; j < input.length; j++) {
+                if(j != 0) mated += "; ";
+                mated += input[j];
+            } mated += "] → [";
+            let sum2 = 0; var newNums = [];
+            for(let j = 0; j < seq.length; j++) {
+                if(j != 0) mated += "; ";
+                mated += seq[j];
+                var price = get_price(seq[j]);
+                if(price !== '?') sum2 += price;
+                else newNums.push(seq[j]);
+            }
+            if(newNums.length == 0) {
+                if((sum2 - sum1) > 0) mated += "] //+" + (sum2 - sum1) + "$";
+                else if((sum2 - sum1) < 0) mated += "] //" + (sum2 - sum1) + "$";
+                else mated += "] //-0$";
+            }
+            else mated += "] //-0$";
+            mated += " " + t_to_string(get_t(seq));
+            textBox1.value += "\n    " + mated;
+            for(let j = 0; j < seq.length; j++) {
+                let c = false;
+                for(let k = 0; k < nums.length && !c; k++) if(seq[j] == nums[k][0]) c = true;
+                if(!c) {
+                    nums.push([seq[j], [], (sum1 - sum2)/newNums.length]);
+                    addButton(seq[j])
+                }
+            }
+            let id = 0; for(; id < nums.length; id++) if(seq[0] == nums[id][0]) break;
+            if(id < nums.length) {
+                if(newNums.length == 0) nums[id][1].push([mated, (sum2 - sum1)]);
+                else nums[id][1].push([mated, 0]);
+            }
+            for(let j = 1; j < seq.length; j++) if(seq[j] != seq[j-1]) {
+                id = 0; for(; id < nums.length; id++) if(seq[j] == nums[id][0]) break;
+                if(newNums.length == 0) nums[id][1].push([mated, (sum2 - sum1)]);
+                else nums[id][1].push([mated, 0]);
+            }
+        }
+    }
+    times++;
+    label1.innerText = "шаг: " + times;
+    
+    //buttons.innerHTML = ""; [...buttons.children].sort((a, b) => parseInt(a.textContent) - parseInt(b.textContent)).forEach(btn => buttons.appendChild(btn));
+    
+    /*textBox1.value = "[";
+    for(let i = 0; i < nums.length; i++) {
+        if(i != 0) textBox1.value += "; ";
+        textBox1.value += nums[i] + "";
+    }
+    textBox1.value += "]";*/
+    
+    //drawButtons();
+}
+
+function addButton(num) {
+    //buttons.innerHTML = "";
+    //for(let i = 0; i < nums.length; i++) {
+        //btn.className = "numBtn";
+        //const btns = [...buttons.children];
+        //if(btns.length < 1) buttons.insertBefore(btn, btns[btns.length - 1]);
+        //else 
+    //}
+    const btn = document.createElement('button');
+    btn.textContent = num + "";
+    btn.className = "numBtn";
+    color = get_color(num);
+    let R = color[0];
+    let G = color[1];
+    let B = color[2];
+    btn.style.backgroundColor = `rgb(${R}, ${G}, ${B})`;
+    if(R+G+B < 256) btn.style.color = "white";
+    btn.addEventListener('click', () => {this.numBtn_Click(num);});
+    const btns = [...buttons.children];
+    if(btns.length == 0 || parseInt(btns[btns.length-1].textContent) < num) buttons.appendChild(btn);
+    else for(let i = 0; i < btns.length; i++) if(parseInt(btns[i].textContent) > num) {
+        buttons.insertBefore(btn, btns[i]);
+        break;
+    }
+}
+
+function numBtn_Click(num) {
+    if(selNum == num) page++;
+    else page = 0;
+    textBox1.value = num + ":";
+    let id = 0; for(; id < nums.length; id++) if(num == nums[id][0]) break;
+    textBox1.value += "\nпервая цена создания: " + nums[id][2] + "$";
+    textBox1.value += "\nспособов создания: " + nums[id][1].length;
+    if(page*100+1 >= nums[id][1].length) page = 0;
+    if(nums[id][1].length > 100) textBox1.value += " (" + (page*100+1) + " - " + min(page*100+100, nums[id][1].length) + ")";
+    textBox1.value += ":\n";
+    if(id < nums.length) {
+        if(nums[id][1].length > 1 && selNum != num) nums[id][1].sort((a, b) => b[1] - a[1]);
+        for(let i = page*100; i < min(page*100+100, nums[id][1].length); i++) 
+            textBox1.value += "\n" + nums[id][1][i][0];
+    }
+    selNum = num;
+}
+
+function min(a, b) {
+    if(a > b) return b;
+    return a;
+}
+
+function mod(a, b) {
+    if(a >= 0) return a % b;
+    let c = b - ((-a) % b); if(c == b) c = 0;
+    else return c;
+}
+
+function t_to_string(t) {
+    let s = Math.ceil((Math.abs(t) % 1)*60);
+    let m = Math.floor(Math.abs(t)) % 60;
+    let h = Math.floor(Math.abs(t)/60);
+    var str = "";
+    if(t < 0 && h != 0) str += "-";
+    if(h != 0) { 
+        if(h > 10 && h < 20 || h%10 > 4 || h%10 == 0) str += h + " часов ";
+        else if(h%10 == 1) str += h + " час ";
+        else str += h + " часа ";
+    }
+    if(t < 0) str += "-";
+    if(m > 10 && m < 20 || m%10 > 4 || m%10 == 0) str += m + " минут ";
+    else if(m%10 == 1) str += m + " минута ";
+    else str += m + " минуты ";
+    if(t < 0 && s != 0) str += "-"
+    if(s != 0) {
+        if(s > 10 && s < 20 || s%10 > 4 || s%10 == 0) str += s + " секунд";
+        else if(s%10 == 1) str += s + " секунда";
+        else str += s + " секунды";
+    }
+    return str;
+}
+
+function get_price(num) {
+    for(let i = 0; i < nums.length; i++) if(num == nums[i][0]) return nums[i][2];
+    return '?';
+}
+
+function get_color(num) {
+    let n = Math.abs(num);
+    if(num >= -1) n = num;
+    let color = mod((Math.pow(256, Math.floor((mod(n, 6))/2))*223 + Math.pow(256, Math.floor((mod((n-2), 6))/2))*223*(mod(n, 2)) +(32*256*256 + 32*256 + 32) - min(Math.pow(3.4 /*Math.E*/, n), mod(mod(mod(mod(n, (256*256*256))*n, (256*256*256))*n, (256*256*256))*n, (256*256*256)))), (256*256*256));
+    if(num < -1) color = (256*256*256-1) - color;
+    //console.log(color);
+    let R = Math.floor(color/(256*256))%256;
+    let G = Math.floor(color/(256))%256;
+    let B = Math.floor(color)%256;
+    return [R, G, B];
+}
+
+function get_t(seq) {
+    let sum = 0;
+    for(let i = 0; i < seq.length; i++) sum += seq[i];
+    if(sum > 17) {
+        let t = 60*Math.log10(sum/6)/1.5-1;
+        if(t < sum) return t;
+        else return sum;
+    } else return sum;
+}
+
+function mating(list, rule) {
+    let pro = 1; for(let i = 0; i < list.length; i++) pro *= list[i];
+    return decomposition(pro - rule);
+}
+
+function decomposition(num) {
+    list = [];
+	try {
+		let a = num;
+		if(a < 0) {
+		    list.push(-1);
+		    a = -a;
+		}
+        a -= a%1;
+		if(a == 1) return list;
+		for(let i = 0, b = 2, c = 1; true;) {
+			if(a == 0) {
+				list.push(a);
+				break;
+			}
+			while ((a/(10*i+b))%1 == 0) {
+				if((a/(10*i+b)) < 10*i+b) {
+					list.push(a);
+					c = 0;
+					break;
+				}
+				list.push(10*i+b);
+				a /= (10*i+b);
+			}
+			if ((a/(10*i+b))%1 != 0) {
+				if (b == 2) b = 3;
+				else if (b == 3 && i == 0) b = 5;
+				else if (b == 5) b = 7;
+				else if (b == 7 && i == 0) { b = 1; i++; }
+				else if (b == 1) b = 3;
+				else if (b == 3) b = 7;
+				else if (b == 7) b = 9;
+				else if (b == 9) { b = 1; i++; }
+			}
+			if((a/(10*i+b)) < 10*i+b) {
+				if (c == 1) list.push(a);
+				break;
+			}
+		}
+	} catch(Exception) { return list; }
+	return list;
+}
