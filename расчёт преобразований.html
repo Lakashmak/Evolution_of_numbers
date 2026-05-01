@@ -11,6 +11,7 @@
         
         #button1 {
             margin-left: 9.5em;
+            margin-top: 10px;
         }
         
         #label1 {
@@ -38,30 +39,64 @@
         }
     </style>
 </head>
-<body>
+<body id="body">
+    <input type="text" id="textBox2" value="1">
+    <button id="button2">задать правило</button><br>
     <button id="button1">Посчитать</button>
     <div id="label1">шаг: 0</div>
-    <textarea id="textBox1">[] → [1] //1$</textarea>
+    <textarea id="textBox1">[] → [1] //-0$</textarea>
     <div id="buttons"></div>
     <script>
         const button1 = document.getElementById('button1');
+        const button2 = document.getElementById('button2');
         const label1 = document.getElementById('label1');
         const textBox1 = document.getElementById('textBox1');
+        const textBox2 = document.getElementById('textBox2');
         const buttons = document.getElementById('buttons');
+        const body = document.getElementById('body');
         
         button1.addEventListener('click', () => {this.button1_Click();});
+        button2.addEventListener('click', () => {this.button2_Click();});
         
         let times = 0;
-        var nums = [[1, [["[] → [1] //1$", 1]], 1]];
+        var nums = [[1, [["[] → [1] //1$", 1]], 0]];
         addButton(1);
         let selNum;
         let page = 0;
+        //for(let i = -100; i <= 100; i++) addButton(i);
+        let rulMat = 1;
+        var prime = [];
+        for(let i = 2; prime.length < Math.abs(rulMat); i++) if(decomposition(i).length == 1) prime.push(i);
+        let bgc = get_color(prime[Math.abs(rulMat)-1]);
+        if(rulMat > 0) body.style.backgroundColor = `rgb(${bgc[0]}, ${bgc[1]}, ${bgc[2]})`;
+        else if(rulMat == 0) body.style.backgroundColor = `rgb(0, 0, 255)`;
+        else body.style.backgroundColor = `rgb(${255-bgc[0]}, ${255-bgc[1]}, ${255-bgc[2]})`;
+        
+        function button2_Click() {
+            rulMat = parseInt(textBox2.value);
+            times = 0;
+            nums = [[1, [["[] → [1] //1$", 1]], 0]];
+            buttons.innerHTML = "";
+            addButton(1);
+            page = 0;
+            prime = [];
+            for(let i = 2; prime.length < Math.abs(rulMat); i++) if(decomposition(i).length == 1) prime.push(i);
+            bgc = get_color(prime[Math.abs(rulMat)-1]);
+            if(rulMat > 0) body.style.backgroundColor = `rgb(${bgc[0]}, ${bgc[1]}, ${bgc[2]})`;
+            else if(rulMat == 0) body.style.backgroundColor = `rgb(0, 0, 255)`;
+            else body.style.backgroundColor = `rgb(${255-bgc[0]}, ${255-bgc[1]}, ${255-bgc[2]})`;
+            label1.innerText = "шаг: " + times;
+            textBox1.value = "установлено правило:\n mating(a; b) = decomposition(a*b ";
+            if(rulMat >= 0) textBox1.value += "- " + rulMat + ")";
+            else textBox1.value += "+ " + (-rulMat) + ")";
+            textBox1.value += "\n\nдобавлены:\n    [] → [1] //-0$";
+        }
         
         function button1_Click() {
             textBox1.value = "добавлены:";
             if(times < nums.length) {
                 for(let i = 0; i <= times; i++) {
-                    var seq = mating(nums[i][0], nums[times][0]); seq.sort((a, b) => a - b);
+                    var seq = mating([nums[i][0], nums[times][0]], rulMat); seq.sort((a, b) => a - b);
                     let sum1 = get_price(nums[i][0]) + get_price(nums[times][0]) + 1;
                     let a, b; if(nums[times][0] >= nums[i][0]) { a = nums[i][0]; b = nums[times][0]; }
                     else { a = nums[times][0]; b = nums[i][0]; }
@@ -80,6 +115,7 @@
                         else mated += "] //-0$";
                     }
                     else mated += "] //-0$";
+                    mated += " " + t_to_string(get_t(seq));
                     textBox1.value += "\n    " + mated;
                     for(let j = 0; j < seq.length; j++) {
                         let c = false;
@@ -127,6 +163,12 @@
             const btn = document.createElement('button');
             btn.textContent = num + "";
             btn.className = "numBtn";
+            color = get_color(num);
+            let R = color[0];
+            let G = color[1];
+            let B = color[2];
+            btn.style.backgroundColor = `rgb(${R}, ${G}, ${B})`;
+            if(R+G+B < 256) btn.style.color = "white";
             btn.addEventListener('click', () => {this.numBtn_Click(num);});
             const btns = [...buttons.children];
             if(btns.length == 0 || parseInt(btns[btns.length-1].textContent) < num) buttons.appendChild(btn);
@@ -159,15 +201,72 @@
             return a;
         }
         
+        function mod(a, b) {
+            if(a >= 0) return a % b;
+            let c = b - ((-a) % b); if(c == b) c = 0;
+            else return c;
+        }
+        
+        function t_to_string(t) {
+            let s = Math.ceil((Math.abs(t) % 1)*60);
+            let m = Math.floor(Math.abs(t)) % 60;
+            let h = Math.floor(Math.abs(t)/60);
+            var str = "";
+            if(t < 0 && h != 0) str += "-";
+            if(h != 0) { 
+                if(h > 10 && h < 20 || h%10 > 4 || h%10 == 0) str += h + " часов ";
+                else if(h%10 == 1) str += h + " час ";
+                else str += h + " часа ";
+            }
+            if(t < 0) str += "-";
+            if(m > 10 && m < 20 || m%10 > 4 || m%10 == 0) str += m + " минут ";
+            else if(m%10 == 1) str += m + " минута ";
+            else str += m + " минуты ";
+            if(t < 0 && s != 0) str += "-"
+            if(s != 0) {
+                if(s > 10 && s < 20 || s%10 > 4 || s%10 == 0) str += s + " секунд";
+                else if(s%10 == 1) str += s + " секунда";
+                else str += s + " секунды";
+            }
+            return str;
+        }
+        
         function get_price(num) {
             for(let i = 0; i < nums.length; i++) if(num == nums[i][0]) return nums[i][2];
             return '?';
         }
         
-        function mating(n1, n2) {
+        function get_color(num) {
+            let n = Math.abs(num);
+            if(num >= -1) n = num;
+            let color = mod((Math.pow(256, Math.floor((mod(n, 6))/2))*223 + Math.pow(256, Math.floor((mod((n-2), 6))/2))*223*(mod(n, 2)) +(32*256*256 + 32*256 + 32) - min(Math.pow(3.4 /*Math.E*/, n), mod(mod(mod(mod(n, (256*256*256))*n, (256*256*256))*n, (256*256*256))*n, (256*256*256)))), (256*256*256));
+            if(num < -1) color = (256*256*256-1) - color;
+            //console.log(color);
+            let R = Math.floor(color/(256*256))%256;
+            let G = Math.floor(color/(256))%256;
+            let B = Math.floor(color)%256;
+            return [R, G, B];
+        }
+        
+        function get_t(seq) {
+            let sum = 0;
+            for(let i = 0; i < seq.length; i++) sum += seq[i];
+            if(sum > 17) {
+                let t = 60*Math.log10(sum/6)/1.5-1;
+                if(t < sum) return t;
+                else return sum;
+            } else return sum;
+        }
+        
+        function mating(list, rule) {
+            let pro = 1; for(let i = 0; i < list.length; i++) pro *= list[i];
+            return decomposition(pro - rule);
+        }
+        
+        function decomposition(num) {
             list = [];
 			try {
-				a = n1*n2 - 1;
+				let a = num;
 				if(a < 0) {
 				    list.push(-1);
 				    a = -a;
